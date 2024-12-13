@@ -1,8 +1,10 @@
+'use-server'
 import {createHash} from 'crypto';
 import {connectDB} from "@/lib/db";
 import {NextApiRequest, NextApiResponse} from "next";
 import { serialize } from 'cookie';
 import {generateToken} from "@/lib/auth";
+import {setCookie} from "cookies-next/server";
 
 
 export default async function Handler(req: NextApiRequest, res: NextApiResponse) {
@@ -15,7 +17,7 @@ export default async function Handler(req: NextApiRequest, res: NextApiResponse)
         const db = await connectDB();
         const [result] = await db.query<any>("SELECT * FROM pengguna WHERE username = ?", [username]);
         if (!result || result.length === 0) {
-            return res.status(400).json({message: 'Username tidak ditemukan'});
+            return res.status(401).json({message: 'Username tidak ditemukan'});
         }
 
         const user = result[0];
@@ -28,13 +30,11 @@ export default async function Handler(req: NextApiRequest, res: NextApiResponse)
         user.password = undefined;
 
         res.setHeader('Set-Cookie', serialize('session', generateToken(user), {
-            httpOnly: true,  // makes the cookie inaccessible to JavaScript
-            secure: process.env.NODE_ENV === 'production',  // cookie is only sent over HTTPS in production
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
             maxAge: 60 * 60 * 24 * 7,
             path: '/',
         }));
-
-
         return res.status(200).json(user);
     } catch (err) {
         return res.status(400).json({message: `Failed to connect to DB: ${err}`});
