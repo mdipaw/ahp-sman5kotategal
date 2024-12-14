@@ -1,33 +1,21 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
+import React, {useState} from 'react';
+import {TableProps} from "@/types/table.types";
 
-export interface TableProps<T extends { id: string }> {
-    data: T[];
-    columns: Array<{
-        title: string;
-        key: string;
-    }>;
-    rowsPerPageOptions?: number[];
-    onRowSelect?: (selectedRows: string[]) => void;
-    onDelete?: () => Promise<void>;
-    onEdit?: (row: T) => void;
-    onAdd?: () => void;
-};
-
-const Table =<T extends { id: string }> ({
-                   columns,
-                   data,
-                   rowsPerPageOptions = [5, 10, 20],
-                   onRowSelect,
-                   onDelete,
-                   onEdit,
-                   onAdd,
-               }: TableProps<T>) => {
+const Table = <T extends { id: string }>({
+                                             columns,
+                                             data,
+                                             rowsPerPageOptions = [5, 10, 20],
+                                             onRowSelect,
+                                             onDelete,
+                                             onEdit,
+                                             onAdd,
+                                             currentPage = 1,
+                                             rowsPerPage = 5,
+                                             totalPages = 1,
+                                             onPageChange,
+                                             onRowsPerPageChange,
+                                         }: TableProps<T>) => {
     const [selectedRows, setSelectedRows] = useState<string[]>([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(rowsPerPageOptions[0]);
-
-    const totalPages = Math.ceil(data.length / rowsPerPage);
     const startIndex = (currentPage - 1) * rowsPerPage;
 
     const handleCheckboxChange = (id: string) => {
@@ -68,9 +56,9 @@ const Table =<T extends { id: string }> ({
                             : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                     disabled={selectedRows.length === 0}
-                    onClick={onDelete}
+                    onClick={() => onDelete?.(selectedRows)}
                 >
-                    Delete Partner
+                    Hapus
                 </button>
             </div>
 
@@ -85,16 +73,17 @@ const Table =<T extends { id: string }> ({
                             checked={selectedRows.length === data.length && selectedRows.length > 0}
                         />
                     </th>
+                    {/* Render other columns dynamically */}
                     {columns.map((col) => (
                         <th key={col.key} className="p-2 border border-gray-300">
                             {col.title}
                         </th>
                     ))}
-                    <th className="p-2 border border-gray-300 w-[100px]">Actions</th>
+                    <th className="p-2 border border-gray-300">Actions</th>
                 </tr>
                 </thead>
                 <tbody>
-                {data.map((row) => (
+                {data?.map((row) => (
                     <tr key={row.id} className="hover:bg-gray-50">
                         <td className="p-2 border border-gray-300 text-center">
                             <input
@@ -104,9 +93,8 @@ const Table =<T extends { id: string }> ({
                             />
                         </td>
                         {Object.entries(row).map(([key, value]) => {
-                            if (key === 'id') {
-                                return null
-
+                            if (key === 'id' || value === undefined) {
+                                return null;
                             }
                             return (
                                 <td key={key} className="p-2 border border-gray-300 text-center">
@@ -134,7 +122,7 @@ const Table =<T extends { id: string }> ({
                         Rows per page
                         <select
                             value={rowsPerPage}
-                            onChange={(e) => setRowsPerPage(Number(e.target.value))}
+                            onChange={(e) => onRowsPerPageChange?.(Number(e.target.value))}
                             className="ml-2 border border-gray-300 rounded px-2 py-1"
                         >
                             {rowsPerPageOptions.map((option) => (
@@ -154,7 +142,7 @@ const Table =<T extends { id: string }> ({
                             className={`px-2 py-1 text-sm rounded ${
                                 currentPage === 1 ? 'text-gray-500 cursor-not-allowed' : 'text-blue-500'
                             }`}
-                            onClick={() => setCurrentPage(1)}
+                            onClick={() => onPageChange?.(1)}
                             disabled={currentPage === 1}
                         >
                             {'<<'}
@@ -163,7 +151,7 @@ const Table =<T extends { id: string }> ({
                             className={`px-2 py-1 text-sm rounded ${
                                 currentPage === 1 ? 'text-gray-500 cursor-not-allowed' : 'text-blue-500'
                             }`}
-                            onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
+                            onClick={() => onPageChange?.(Math.max(currentPage - 1, 1))}
                             disabled={currentPage === 1}
                         >
                             {'<'}
@@ -177,7 +165,7 @@ const Table =<T extends { id: string }> ({
                                     ? 'text-gray-500 cursor-not-allowed'
                                     : 'text-blue-500'
                             }`}
-                            onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
+                            onClick={() => onPageChange?.(Math.min(currentPage + 1, totalPages))}
                             disabled={currentPage === totalPages}
                         >
                             {'>'}
@@ -188,7 +176,7 @@ const Table =<T extends { id: string }> ({
                                     ? 'text-gray-500 cursor-not-allowed'
                                     : 'text-blue-500'
                             }`}
-                            onClick={() => setCurrentPage(totalPages)}
+                            onClick={() => onPageChange?.(totalPages)}
                             disabled={currentPage === totalPages}
                         >
                             {'>>'}

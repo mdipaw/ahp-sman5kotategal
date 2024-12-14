@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 
 type PopupFormProps = {
     title: string;
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (data: string[]) => void;
-    inputs: { label: string; defaultValue: string; disabled?: boolean }[];
+    inputs: { label: string; defaultValue: string; disabled?: boolean; }[];
 };
 
 const PopupForm: React.FC<PopupFormProps> = ({title, isOpen, onClose, onSubmit, inputs }) => {
@@ -13,20 +13,23 @@ const PopupForm: React.FC<PopupFormProps> = ({title, isOpen, onClose, onSubmit, 
         inputs.map(input => input.defaultValue)
     );
 
-    // Handle input change
+    useEffect(() => {
+        setInputValues(inputs.map(input => input.defaultValue));
+    }, [isOpen, inputs]);
+
     const handleInputChange = (index: number, value: string) => {
         const updatedValues = [...inputValues];
         updatedValues[index] = value;
         setInputValues(updatedValues);
     };
 
-    // Submit the form
+
     const handleSubmit = () => {
         onSubmit(inputValues);
-        onClose(); // Close the popup after submission
+        onClose();
     };
 
-    if (!isOpen) return null; // If the popup is not open, don't render anything
+    if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 flex justify-center items-center bg-gray-500 bg-opacity-50">
@@ -41,7 +44,7 @@ const PopupForm: React.FC<PopupFormProps> = ({title, isOpen, onClose, onSubmit, 
                                 value={inputValues[index]}
                                 disabled={input.disabled}
                                 onChange={(e) => handleInputChange(index, e.target.value)}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-400 disabled:text-gray-600 disabled:border-gray-400"
                             />
                         </div>
                     ))}
