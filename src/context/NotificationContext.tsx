@@ -1,6 +1,12 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface NotificationContextType {
+    dismissTime: number;
+    setDismissTime: (time: number) => void;
+    onDismiss: (() => void)|null;
+    setOnDismiss: (v:(()=>void)|null) => void;
+    successMessage: string | null;
+    setSuccessMessage: (message: string | null) => void;
     errorMessage: string | null;
     setErrorMessage: (message: string | null) => void;
 }
@@ -16,11 +22,14 @@ export const useNotification = () => {
 };
 
 export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [dismissTime, setDismissTime] = useState<number>(1000);
+    const [onDismiss, setOnDismiss] = useState<(() => void) | null>(null);
 
     return (
-        <NotificationContext.Provider value={{ errorMessage, setErrorMessage }}>
-    {children}
-    </NotificationContext.Provider>
-);
+        <NotificationContext.Provider value={{ dismissTime, setDismissTime, onDismiss, setOnDismiss ,successMessage, setSuccessMessage, errorMessage, setErrorMessage }}>
+            {children}
+        </NotificationContext.Provider>
+    );
 };
