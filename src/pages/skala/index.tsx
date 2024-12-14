@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from 'react';
+import { useRouter } from 'next/router';
 import {NavBar, Footer} from "@/components";
 import {GetServerSideProps} from "next";
 import {getUser} from "@/lib/auth";
-import {Kriteria, User} from "@/types/api";
+import {Skala, User} from "@/types/api";
 import Table from "@/components/Table";
 import EditForm from "@/components/PopupForm";
 import AddForm from "@/components/PopupForm";
@@ -24,27 +25,31 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 const KriteriaPage = ({user}: { user: User }) => {
     const {setErrorMessage} = useNotification();
-    const [kriteriaList, setKriteriaList] = useState<TypeTableData<Kriteria>[]>([]);
+    const router = useRouter();
+    const [skalaList, setSkalaList] = useState<TypeTableData<Skala>[]>([]);
     const [selectedRows, setSelectedRows] = useState<string[]>([]);
-    const [selectedKriteria, setSelectedKriteria] = useState<TypeTableData<Kriteria> | null>(null);
+    const [selectedSkala, setSelectedSkala] = useState<TypeTableData<Skala> | null>(null);
     const [isAddFormOpen, setIsAddFormOpen] = useState(false);
     const [isEditFormOpen, setIsEditFormOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [rowsPerPage, setRowsPerPage] = useState(20);
     const [totalRecords, setTotalRecords] = useState(0); // New state to store total records count
     const [init, setInit] = useState<boolean>(false);
 
     const handleEditSubmit = async (updatedData: string[]) => {
-        if (selectedKriteria) {
+        if (selectedSkala) {
+            console.log(selectedSkala);
+            console.log(updatedData);
             const response = await fetch("/api/data", {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    type: 'kriteria',
-                    id: selectedKriteria.id,
-                    nama: updatedData[1],
+                    type: 'nilai',
+                    id_nilai: selectedSkala.id,
+                    jum_nilai: updatedData[1],
+                    ket_nilai: updatedData[2],
                 }),
             });
 
@@ -53,31 +58,30 @@ const KriteriaPage = ({user}: { user: User }) => {
                 setErrorMessage(data.error);
                 return
             }
-            setKriteriaList((prevList) =>
-                prevList.map((kriteria) =>
-                    kriteria.id === selectedKriteria.id
-                        ? {...kriteria, nama_kriteria: updatedData[1]}
-                        : kriteria
+            setSkalaList((prevList) =>
+                prevList.map((skala) =>
+                    skala.id === selectedSkala.id
+                        ? {...skala, jum_nilai:Number(updatedData[1]), ket_nilai: updatedData[2]}
+                        : skala
                 )
             );
 
             setIsAddFormOpen(false);
         }
         setIsEditFormOpen(false);
-        setSelectedKriteria(null);
     };
 
     const handleAddSubmit = async (newData: string[]) => {
-        const [idKriteria, namaKriteria] = newData;
+        const [ nilai, ket] = newData;
         const response = await fetch("/api/data", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                type: 'kriteria',
-                id: idKriteria,
-                nama: namaKriteria,
+                type: 'nilai',
+                ket_nilai: ket,
+                jum_nilai: nilai,
             }),
         });
         if (!response.ok) {
@@ -85,17 +89,8 @@ const KriteriaPage = ({user}: { user: User }) => {
             setErrorMessage(data.error);
             return
         }
-        setKriteriaList((prevList) => [
-            ...prevList,
-            {
-                id: idKriteria,
-                nama_kriteria: namaKriteria,
-                bobot_kriteria: 0,
-                jumlah_kriteria: 0,
-                id_kriteria: idKriteria
-            },
-        ]);
         setIsAddFormOpen(false);
+        router.reload()
 
     };
 
@@ -103,13 +98,13 @@ const KriteriaPage = ({user}: { user: User }) => {
         if (totalRecords <= rowsPerPage && init) return
         const offset = (page - 1) * limit;
         const [responseData, responseCount] = await Promise.all([
-            fetch(`/api/data?type=kriteria&limit=${limit}&offset=${offset}`),
-            fetch(`/api/data?type=count&type_count=kriteria`)
+            fetch(`/api/data?type=nilai&limit=${limit}&offset=${offset}`),
+            fetch(`/api/data?type=count&type_count=nilai`)
         ])
 
         if (responseData.ok) {
-            const data = await responseData.json() as Kriteria[];
-            setKriteriaList(data.map((k) => ({...k, id: k.id_kriteria})));
+            const data = await responseData.json() as Skala[];
+            setSkalaList(data.map((k: Skala)  => ({...k, id: `${k.id_nilai}`})));
         }
 
         if (responseCount.ok) {
@@ -120,23 +115,23 @@ const KriteriaPage = ({user}: { user: User }) => {
     };
 
     const handleDelete = async (selectedRows: string[]) => {
-            const values = selectedRows.join(',');
-            const response = await fetch(`/api/data?type=kriteria&ids=${values}&primary_column=id_kriteria`, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
+        const values = selectedRows.join(',');
+        const response = await fetch(`/api/data?type=nilai&primary_column=id_nilai&ids=${values}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
 
-            if (!response.ok) {
-                const data = await response.json();
-                setErrorMessage(data.error);
-                return;
-            }
-            setKriteriaList((prevList) =>
-                prevList.filter((kriteria) => !selectedRows.includes(kriteria.id))
-            );
-           setSelectedRows([])
+        if (!response.ok) {
+            const data = await response.json();
+            setErrorMessage(data.error);
+            return;
+        }
+        setSkalaList((prevList) =>
+            prevList.filter((skala) => !selectedRows.includes(skala.id))
+        );
+        setSelectedRows([])
     };
 
     const totalPages = Math.ceil(totalRecords / rowsPerPage);
@@ -151,16 +146,14 @@ const KriteriaPage = ({user}: { user: User }) => {
             <div className="p-4">
                 <Table
                     columns={[
-                        {title: 'ID Kriteria', key: 'id_kriteria'},
-                        {title: 'Nama Kriteria', key: 'nama'},
-                        {title: "Jumlah", key: 'jumlah'},
-                        {title: 'Bobot', key: 'bobot'},
+                        {title: 'Nilai', key: 'id_kriteria'},
+                        {title: 'Keterangan', key: 'nama'},
                     ]}
-                    data={kriteriaList}
+                    data={skalaList}
                     onRowSelect={(selectedRows) => setSelectedRows(selectedRows)}
-                    onEdit={(kriteria: TypeTableData<Kriteria & {
+                    onEdit={(kriteria: TypeTableData<Skala & {
                         id: string
-                    }>) => (setSelectedKriteria(kriteria), setIsEditFormOpen(true))}
+                    }>) => (setSelectedSkala(kriteria), setIsEditFormOpen(true))}
                     onDelete={handleDelete}
                     onAdd={() => setIsAddFormOpen(true)}
                     currentPage={currentPage}
@@ -168,29 +161,31 @@ const KriteriaPage = ({user}: { user: User }) => {
                     totalPages={totalPages}
                     onPageChange={(page) => handlePageChange(page, setCurrentPage)}
                     onRowsPerPageChange={(rows) => handleRowsPerPageChange(rows, setRowsPerPage, setCurrentPage, fetchData)}
+                    skipValueOnData={['id_nilai']}
                 />
 
-                {selectedKriteria && (
+                {selectedSkala && (
                     <EditForm
-                        title="Edit Kriteria"
+                        title="Edit Nilai"
                         isOpen={isEditFormOpen}
                         onClose={() => setIsEditFormOpen(false)}
                         onSubmit={handleEditSubmit}
                         inputs={[
-                            {label: "ID Kriteria", defaultValue: selectedKriteria.id_kriteria, disabled: true},
-                            {label: 'Nama Kriteria', defaultValue: selectedKriteria.nama_kriteria},
+                            {label: "ID skala", defaultValue: String(selectedSkala.id_nilai), disabled: true},
+                            {label: 'Nilai', defaultValue: String(selectedSkala.jum_nilai)},
+                            {label: 'Keterangan', defaultValue: selectedSkala.ket_nilai},
                         ]}
                     />
                 )}
 
                 <AddForm
-                    title="Tambah Kriteria"
+                    title="Tambah Nilai"
                     isOpen={isAddFormOpen}
                     onClose={() => setIsAddFormOpen(false)}
                     onSubmit={handleAddSubmit}
                     inputs={[
-                        {label: 'ID Kriteria', defaultValue: ''},
-                        {label: 'Nama Kriteria', defaultValue: ''},
+                        {label: 'Nilai', defaultValue: ''},
+                        {label: "Keterangan", defaultValue: ''},
                     ]}
                 />
             </div>
