@@ -14,6 +14,7 @@ const Table = <T extends { id: string }>({
                                              totalPages = 1,
                                              onPageChange,
                                              onRowsPerPageChange,
+    skipValueOnData,
                                          }: TableProps<T>) => {
     const [selectedRows, setSelectedRows] = useState<string[]>([]);
     const startIndex = (currentPage - 1) * rowsPerPage;
@@ -93,7 +94,7 @@ const Table = <T extends { id: string }>({
                             />
                         </td>
                         {Object.entries(row).map(([key, value]) => {
-                            if (key === 'id' || value === undefined) {
+                            if (key === 'id' || value === undefined || skipValueOnData?.includes(key)) {
                                 return null;
                             }
                             return (

@@ -12,4 +12,5 @@ export interface TableProps<T extends object> {
     totalPages?: number;
     onPageChange?: (page: number) => void;
     onRowsPerPageChange?: (rows: number) => void;
+    skipValueOnData?: string[],
 }
