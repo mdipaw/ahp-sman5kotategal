@@ -1,0 +1,1 @@
+export const formatValue = (v: number): number => v % 1 !== 0 ? Number(v.toFixed(4)) : v
