@@ -91,6 +91,11 @@ export const NavBar = ({user}: { user: User }) => {
                         <Link href="/">Beranda</Link>
                     </div>
                     <div className="flex justify-center mx-auto space-x-4 text-white">
+                        {user!.role === 'admin' && (
+                            <Link href="/siswa" className="hover:text-yellow-300">
+                                Siswa
+                            </Link>
+                        )}
                         {user!.role === 'guru' && (
                             <>
                                 <Link href="/skala" className="hover:text-yellow-300">
@@ -120,7 +125,7 @@ export const NavBar = ({user}: { user: User }) => {
                                             isLaporanDropdownOpen ? 'block' : 'hidden'
                                         } dropdown-menu absolute text-gray-700 bg-white shadow-md rounded-lg w-48 mt-2`}
                                     >
-                                        <Link href="#" onClick={() => handleLaporan('siswa')}
+                                        <Link href="#" onClick={() => handleLaporan('student')}
                                               className="block px-4 py-2 text-sm">
                                             Laporan Data Siswa
                                         </Link>

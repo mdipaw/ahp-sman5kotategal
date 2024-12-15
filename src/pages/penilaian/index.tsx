@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 import { NavBar, Footer } from "@/components";
 import { GetServerSideProps } from "next";
 import { getUser } from "@/lib/auth";
@@ -20,8 +19,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 const PenilaianPage = ({ user }: { user: User }) => {
     const { setErrorMessage, setSuccessMessage, setOnDismiss, dismissTime } = useNotification();
-    const router = useRouter();
-
     const [score, setScore] = useState<Score<{ [key: string]: any }> | null>(null);
     const [scoreCode, setScoreCode] = useState<string[]>(["Baru"]);
     const [kriteria, setKriteria] = useState<Kriteria[]>([]);
@@ -30,7 +27,7 @@ const PenilaianPage = ({ user }: { user: User }) => {
     const [siswa, setSiswa] = useState<Student[]>([]);
     const [inputAddValues, setInputAddValues] = useState<{ [key: string]: any }>({});
     const [isAddOpen, setIsAddOpen] = useState(false);
-    const [isEditOpen, setIsEditOpen] = useState(false); // New state for edit form
+    const [isEditOpen, setIsEditOpen] = useState(false);
     const [selectedCode, setSelectedCode] = useState<string>("Baru");
 
     const fetchData = async () => {
@@ -91,14 +88,14 @@ const PenilaianPage = ({ user }: { user: User }) => {
             setErrorMessage(result.error || "Something went wrong.");
         }
 
-        setIsAddOpen(false); // Close the form
+        setIsAddOpen(false);
     };
 
     const handleEditSubmit = async () => {
         const submitData = {
             selectedCode,
             selectedSiswa,
-            inputAddValues, // The updated values for the criteria
+            inputAddValues,
         };
 
         const response = await fetch(`/api/data/${selectedStudent.id}`, {
@@ -113,12 +110,12 @@ const PenilaianPage = ({ user }: { user: User }) => {
 
         if (response.ok) {
             setSuccessMessage("Record updated successfully.");
-            setOnDismiss(() => setTimeout(() => fetchData(), dismissTime + 100)); // Reload data after update
+            setOnDismiss(() => setTimeout(() => fetchData(), dismissTime + 100));
         } else {
             setErrorMessage(result.error || "Failed to update record.");
         }
 
-        setIsEditOpen(false); // Close the edit form
+        setIsEditOpen(false);
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, code: string) => {
@@ -146,17 +143,17 @@ const PenilaianPage = ({ user }: { user: User }) => {
     };
 
     const openEditForm = (student: any) => {
-        // Populate the form with the selected student's data
         setSelectedStudent(student);
-        setSelectedSiswa(student.student_id); // assuming student_id field is there
-        setInputAddValues(JSON.parse(student.data)); // assuming the data is in JSON format
-        setSelectedCode(student.code || "Baru"); // Assuming code exists on the student data
+        setSelectedSiswa(student.student_id);
+        setInputAddValues(JSON.parse(student.data));
+        setSelectedCode(student.code || "Baru");
         setIsEditOpen(true);
     };
 
     return (
         <>
-            <NavBar user={user} />
+            <NavBar user={user}/>
+            <h1 className="text-4xl font-semibold mt-10 mb-5 text-center">Penilaian siswa</h1>
             <div className="flex justify-end p-8 mb-0">
                 <button
                     className="bg-blue-500 text-white px-4 py-2 rounded"
@@ -313,14 +310,12 @@ const PenilaianPage = ({ user }: { user: User }) => {
                     </div>
                 </div>
             )}
-
             <div className="p-4">
                 {/* Looping through the Score object */}
                 {score
                     ? Object.keys(score).map((code) => (
                         <div key={code} className="mb-8">
-                            <h2 className="text-xl font-semibold mb-4">{code}</h2>
-
+                            <h1 className="text-4xl font-semibold mt-10 mb-5">{code}</h1>
                             <table className="min-w-full table-auto border-collapse border border-gray-300">
                                 <thead>
                                 <tr className="bg-gray-100">
@@ -346,7 +341,8 @@ const PenilaianPage = ({ user }: { user: User }) => {
                                         >
                                             <td className="px-4 py-2 border border-gray-300">{s.student_name}</td>
                                             {kriteria.map((kriteriaItem) => (
-                                                <td key={kriteriaItem.code} className="px-4 py-2 border border-gray-300">
+                                                <td key={kriteriaItem.code}
+                                                    className="px-4 py-2 border border-gray-300">
                                                     {data[kriteriaItem.code]}
                                                 </td>
                                             ))}
@@ -374,7 +370,7 @@ const PenilaianPage = ({ user }: { user: User }) => {
                     : null}
             </div>
 
-            <Footer />
+            <Footer/>
         </>
     );
 };

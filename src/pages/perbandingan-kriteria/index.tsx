@@ -2,7 +2,7 @@ import { GetServerSideProps } from "next";
 import { getUser } from "@/lib/auth";
 import { Footer, NavBar } from "@/components";
 import {Comparison, Kriteria, Skala, User} from "@/types/api";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {formatValue} from "@/lib/conversion";
 import {calculateAhp} from "@/lib/ahp";
 import {router} from "next/client";
@@ -117,7 +117,8 @@ const PerbandinganPage = ({ user }: { user: User }) => {
 
     return (
         <>
-            <NavBar user={user} />
+            <NavBar user={user}/>
+            <h1 className="text-4xl font-semibold mt-10 mb-5 text-center">Tabel perbandingan berpasangan</h1>
             <div className="px-8 pt-16">
                 <form onSubmit={handleSubmit} className="min-w-full">
                     <table className="min-w-full border border-gray-300 table-auto">
@@ -138,7 +139,8 @@ const PerbandinganPage = ({ user }: { user: User }) => {
                                     {kriteria1.name}
                                 </td>
                                 {kriteria.map((kriteria2) => (
-                                    <td key={kriteria2.id} className="p-2 border border-gray-300 text-center break-words">
+                                    <td key={kriteria2.id}
+                                        className="p-2 border border-gray-300 text-center break-words">
                                         {kriteria1.id !== kriteria2.id && (
                                             <select
                                                 value={comparisons[kriteria1.code]?.[kriteria2.code] || 1}
@@ -175,7 +177,7 @@ const PerbandinganPage = ({ user }: { user: User }) => {
                     </div>
                 </form>
             </div>
-            <Footer />
+            <Footer/>
         </>
     );
 };

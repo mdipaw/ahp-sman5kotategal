@@ -143,6 +143,7 @@ const KriteriaPage = ({user}: { user: User }) => {
         <>
             <NavBar user={user}/>
             <div className="p-4">
+                <h1 className="text-4xl font-semibold mt-10 mb-5 text-center">Skala dasar</h1>
                 <Table
                     columns={[
                         {title: 'Nilai', key: 'id_kriteria'},
