@@ -87,7 +87,7 @@ export const NavBar = ({user}: { user: User }) => {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <nav className="bg-gray-800 p-4 rounded-lg shadow-md fixed w-full top-0 left-0 z-10">
+            <nav className="bg-gray-800 p-4 shadow-md fixed w-full top-0 left-0 z-10">
                 <div className="flex items-center justify-between">
                     <div className="text-white text-2xl font-semibold">
                         <Link href="/">Home</Link>

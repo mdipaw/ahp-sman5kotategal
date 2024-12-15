@@ -27,7 +27,6 @@ const SuccessPopup: React.FC = () => {
             setManualDismiss(true);
             setTimeout(() => {
                 setSuccessMessage(null);
-                onDismiss();
             }, dismissTime);
         } else {
             setSuccessMessage(null);
