@@ -9,6 +9,7 @@ import AddForm from "@/components/PopupForm";
 import {TypeTableData} from "@/types/table.types";
 import {handlePageChange, handleRowsPerPageChange} from "@/lib/pagination";
 import {useNotification} from "@/context/NotificationContext";
+import {router} from "next/client";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
     const [user, backToLogin] = await getUser(context);
@@ -23,9 +24,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 };
 
 const KriteriaPage = ({user}: { user: User }) => {
-    const {setErrorMessage} = useNotification();
+    const {setErrorMessage, setSuccessMessage, setOnDismiss, dismissTime} = useNotification();
     const [kriteriaList, setKriteriaList] = useState<TypeTableData<Kriteria>[]>([]);
-    const [selectedRows, setSelectedRows] = useState<string[]>([]);
+    const [{}, setSelectedRows] = useState<number[]>([]);
     const [selectedKriteria, setSelectedKriteria] = useState<TypeTableData<Kriteria> | null>(null);
     const [isAddFormOpen, setIsAddFormOpen] = useState(false);
     const [isEditFormOpen, setIsEditFormOpen] = useState(false);
@@ -43,7 +44,7 @@ const KriteriaPage = ({user}: { user: User }) => {
                 },
                 body: JSON.stringify({
                     type: 'kriteria',
-                    id: selectedKriteria.id,
+                    code: selectedKriteria.code,
                     nama: updatedData[1],
                 }),
             });
@@ -55,8 +56,8 @@ const KriteriaPage = ({user}: { user: User }) => {
             }
             setKriteriaList((prevList) =>
                 prevList.map((kriteria) =>
-                    kriteria.id === selectedKriteria.id
-                        ? {...kriteria, nama_kriteria: updatedData[1]}
+                    kriteria.code === selectedKriteria.code
+                        ? {...kriteria, name: updatedData[1]}
                         : kriteria
                 )
             );
@@ -65,6 +66,7 @@ const KriteriaPage = ({user}: { user: User }) => {
         }
         setIsEditFormOpen(false);
         setSelectedKriteria(null);
+        setSuccessMessage("success")
     };
 
     const handleAddSubmit = async (newData: string[]) => {
@@ -76,8 +78,8 @@ const KriteriaPage = ({user}: { user: User }) => {
             },
             body: JSON.stringify({
                 type: 'kriteria',
-                id: idKriteria,
-                nama: namaKriteria,
+                code: idKriteria,
+                name: namaKriteria,
             }),
         });
         if (!response.ok) {
@@ -85,18 +87,9 @@ const KriteriaPage = ({user}: { user: User }) => {
             setErrorMessage(data.error);
             return
         }
-        setKriteriaList((prevList) => [
-            ...prevList,
-            {
-                id: idKriteria,
-                nama_kriteria: namaKriteria,
-                bobot_kriteria: 0,
-                jumlah_kriteria: 0,
-                id_kriteria: idKriteria
-            },
-        ]);
         setIsAddFormOpen(false);
-
+        setSuccessMessage("success")
+        setOnDismiss(()=>setTimeout(()=> router.reload(), dismissTime + 100))
     };
 
     const fetchData = async (page: number, limit: number) => {
@@ -109,7 +102,7 @@ const KriteriaPage = ({user}: { user: User }) => {
 
         if (responseData.ok) {
             const data = await responseData.json() as Kriteria[];
-            setKriteriaList(data.map((k) => ({...k, id: k.id_kriteria})));
+            setKriteriaList(data);
         }
 
         if (responseCount.ok) {
@@ -119,9 +112,9 @@ const KriteriaPage = ({user}: { user: User }) => {
         }
     };
 
-    const handleDelete = async (selectedRows: string[]) => {
+    const handleDelete = async (selectedRows: number[]) => {
             const values = selectedRows.join(',');
-            const response = await fetch(`/api/data?type=kriteria&ids=${values}&primary_column=id_kriteria`, {
+            const response = await fetch(`/api/data?type=kriteria&ids=${values}&primary_column=id`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -137,6 +130,7 @@ const KriteriaPage = ({user}: { user: User }) => {
                 prevList.filter((kriteria) => !selectedRows.includes(kriteria.id))
             );
            setSelectedRows([])
+           setSuccessMessage("success")
     };
 
     const totalPages = Math.ceil(totalRecords / rowsPerPage);
@@ -151,16 +145,14 @@ const KriteriaPage = ({user}: { user: User }) => {
             <div className="p-4">
                 <Table
                     columns={[
-                        {title: 'ID Kriteria', key: 'id_kriteria'},
+                        {title: 'ID Kriteria', key: 'id'},
                         {title: 'Nama Kriteria', key: 'nama'},
                         {title: "Jumlah", key: 'jumlah'},
                         {title: 'Bobot', key: 'bobot'},
                     ]}
                     data={kriteriaList}
                     onRowSelect={(selectedRows) => setSelectedRows(selectedRows)}
-                    onEdit={(kriteria: TypeTableData<Kriteria & {
-                        id: string
-                    }>) => (setSelectedKriteria(kriteria), setIsEditFormOpen(true))}
+                    onEdit={(kriteria: TypeTableData<Kriteria>) => (setSelectedKriteria(kriteria), setIsEditFormOpen(true))}
                     onDelete={handleDelete}
                     onAdd={() => setIsAddFormOpen(true)}
                     currentPage={currentPage}
@@ -177,8 +169,8 @@ const KriteriaPage = ({user}: { user: User }) => {
                         onClose={() => setIsEditFormOpen(false)}
                         onSubmit={handleEditSubmit}
                         inputs={[
-                            {label: "ID Kriteria", defaultValue: selectedKriteria.id_kriteria, disabled: true},
-                            {label: 'Nama Kriteria', defaultValue: selectedKriteria.nama_kriteria},
+                            {label: "ID Kriteria", defaultValue: String(selectedKriteria.code), disabled: true},
+                            {label: 'Nama Kriteria', defaultValue: selectedKriteria.name},
                         ]}
                     />
                 )}

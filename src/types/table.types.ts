@@ -1,11 +1,11 @@
-export type TypeTableData<T extends object> = T & { id: string };
+export type TypeTableData<T extends object> = T & { id: number };
 export interface TableProps<T extends object> {
-    data: TypeTableData<T>[];
+    data: T[];
     columns: Array<{ title: string; key: string }>;
     rowsPerPageOptions?: number[];
-    onRowSelect?: (selectedRows: string[]) => void;
-    onDelete?: (selectedRows:string[]) => void;
-    onEdit?: (t: TypeTableData<T>) => void;
+    onRowSelect?: (selectedRows: number[]) => void;
+    onDelete?: (selectedRows:number[]) => void;
+    onEdit?: (t: T) => void;
     onAdd?: () => void;
     currentPage?: number;
     rowsPerPage?: 5 | 10 | 20;

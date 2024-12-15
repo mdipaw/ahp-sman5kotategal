@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {TableProps} from "@/types/table.types";
 
-const Table = <T extends { id: string }>({
+const Table = <T extends { id: number }>({
                                              columns,
                                              data,
                                              rowsPerPageOptions = [5, 10, 20],
@@ -16,10 +16,10 @@ const Table = <T extends { id: string }>({
                                              onRowsPerPageChange,
     skipValueOnData,
                                          }: TableProps<T>) => {
-    const [selectedRows, setSelectedRows] = useState<string[]>([]);
+    const [selectedRows, setSelectedRows] = useState<number[]>([]);
     const startIndex = (currentPage - 1) * rowsPerPage;
 
-    const handleCheckboxChange = (id: string) => {
+    const handleCheckboxChange = (id: number) => {
         const newSelectedRows = selectedRows.includes(id)
             ? selectedRows.filter((rowId) => rowId !== id)
             : [...selectedRows, id];
@@ -66,7 +66,7 @@ const Table = <T extends { id: string }>({
             {/* Table */}
             <table className="min-w-full border border-gray-300">
                 <thead>
-                <tr className="bg-gray-100">
+                    <tr className="bg-gray-100">
                     <th className="p-2 border border-gray-300">
                         <input
                             type="checkbox"

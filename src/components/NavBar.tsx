@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import Link from 'next/link';
-import {Siswa, Kriteria, HasilAkhir, Penilaian, User} from "@/types/api";
+import {Siswa, Kriteria, HasilAkhir, User} from "@/types/api";
 import {
     LaporanFooter,
     LaporanHasilAkhir,
@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const LaporanPDF = (data: Siswa[] | Kriteria[] | HasilAkhir[] | Penilaian[], type: string): Promise<Blob> => {
+const LaporanPDF = (data: Siswa[] | Kriteria[] | HasilAkhir[], type: string): Promise<Blob> => {
     let Data;
 
     switch (type) {
@@ -28,7 +28,7 @@ const LaporanPDF = (data: Siswa[] | Kriteria[] | HasilAkhir[] | Penilaian[], typ
             Data = LaporanSiswa(data as Siswa[]);
             break;
         case 'penilaian':
-            Data = LaporanPenilaian(data as Penilaian[]);
+            Data = LaporanPenilaian(data as any[]);
             break;
         case 'hasil-akhir':
             Data = LaporanHasilAkhir(data as HasilAkhir[]);
@@ -126,7 +126,7 @@ export const NavBar = ({user}: { user: User }) => {
                                         isPerbandinganDropdownOpen ? 'block' : 'hidden'
                                     } dropdown-menu absolute text-gray-700 bg-white shadow-md rounded-lg w-48 mt-2`}
                                 >
-                                    <Link href="/analisa-kriteria" className="block px-4 py-2 text-sm">
+                                    <Link href="/perbandingan-kriteria" className="block px-4 py-2 text-sm">
                                         Kriteria
                                     </Link>
                                     <Link href="/analisa-alternatif" className="block px-4 py-2 text-sm">

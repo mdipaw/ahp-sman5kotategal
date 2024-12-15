@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { useRouter } from 'next/router';
+import {useRouter} from 'next/router';
 import {NavBar, Footer} from "@/components";
 import {GetServerSideProps} from "next";
 import {getUser} from "@/lib/auth";
@@ -24,10 +24,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 };
 
 const KriteriaPage = ({user}: { user: User }) => {
-    const {setErrorMessage} = useNotification();
+    const {setErrorMessage, setSuccessMessage, setOnDismiss, dismissTime} = useNotification();
     const router = useRouter();
     const [skalaList, setSkalaList] = useState<TypeTableData<Skala>[]>([]);
-    const [selectedRows, setSelectedRows] = useState<string[]>([]);
+    const [{}, setSelectedRows] = useState<number[]>([]);
     const [selectedSkala, setSelectedSkala] = useState<TypeTableData<Skala> | null>(null);
     const [isAddFormOpen, setIsAddFormOpen] = useState(false);
     const [isEditFormOpen, setIsEditFormOpen] = useState(false);
@@ -38,8 +38,6 @@ const KriteriaPage = ({user}: { user: User }) => {
 
     const handleEditSubmit = async (updatedData: string[]) => {
         if (selectedSkala) {
-            console.log(selectedSkala);
-            console.log(updatedData);
             const response = await fetch("/api/data", {
                 method: "PUT",
                 headers: {
@@ -61,18 +59,17 @@ const KriteriaPage = ({user}: { user: User }) => {
             setSkalaList((prevList) =>
                 prevList.map((skala) =>
                     skala.id === selectedSkala.id
-                        ? {...skala, jum_nilai:Number(updatedData[1]), ket_nilai: updatedData[2]}
+                        ? {...skala, jum_nilai: Number(updatedData[1]), ket_nilai: updatedData[2]}
                         : skala
                 )
             );
-
             setIsAddFormOpen(false);
+            setSuccessMessage("succss")
         }
-        setIsEditFormOpen(false);
     };
 
     const handleAddSubmit = async (newData: string[]) => {
-        const [ nilai, ket] = newData;
+        const [nilai, ket] = newData;
         const response = await fetch("/api/data", {
             method: "POST",
             headers: {
@@ -90,7 +87,8 @@ const KriteriaPage = ({user}: { user: User }) => {
             return
         }
         setIsAddFormOpen(false);
-        router.reload()
+        setSuccessMessage("succss")
+        setOnDismiss(() => setTimeout(() => router.reload(), dismissTime + 100))
 
     };
 
@@ -104,7 +102,7 @@ const KriteriaPage = ({user}: { user: User }) => {
 
         if (responseData.ok) {
             const data = await responseData.json() as Skala[];
-            setSkalaList(data.map((k: Skala)  => ({...k, id: `${k.id_nilai}`})));
+            setSkalaList(data.map((k: Skala) => ({...k, id: k.id_nilai})));
         }
 
         if (responseCount.ok) {
@@ -114,7 +112,7 @@ const KriteriaPage = ({user}: { user: User }) => {
         }
     };
 
-    const handleDelete = async (selectedRows: string[]) => {
+    const handleDelete = async (selectedRows: number[]) => {
         const values = selectedRows.join(',');
         const response = await fetch(`/api/data?type=nilai&primary_column=id_nilai&ids=${values}`, {
             method: "DELETE",
@@ -132,6 +130,7 @@ const KriteriaPage = ({user}: { user: User }) => {
             prevList.filter((skala) => !selectedRows.includes(skala.id))
         );
         setSelectedRows([])
+        setSuccessMessage("success")
     };
 
     const totalPages = Math.ceil(totalRecords / rowsPerPage);
@@ -151,9 +150,7 @@ const KriteriaPage = ({user}: { user: User }) => {
                     ]}
                     data={skalaList}
                     onRowSelect={(selectedRows) => setSelectedRows(selectedRows)}
-                    onEdit={(kriteria: TypeTableData<Skala & {
-                        id: string
-                    }>) => (setSelectedSkala(kriteria), setIsEditFormOpen(true))}
+                    onEdit={(kriteria: TypeTableData<Skala>) => (setSelectedSkala(kriteria), setIsEditFormOpen(true))}
                     onDelete={handleDelete}
                     onAdd={() => setIsAddFormOpen(true)}
                     currentPage={currentPage}
