@@ -1,6 +1,6 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import {User} from "@/types/api";
+import {Comparison, Kriteria, Score, ScoreData, User} from "@/types/api";
 import {
     LaporanFooter,
     LaporanHasilAkhir,
@@ -9,8 +9,8 @@ import {
     LaporanPenilaian,
     LaporanSiswa
 } from "@/components/laporan";
-import {Document, Page, pdf, StyleSheet} from "@react-pdf/renderer";
-
+import { Document, Page, pdf, StyleSheet } from "@react-pdf/renderer";
+import { useNotification } from "@/context/NotificationContext";
 
 const styles = StyleSheet.create({
     page: {
@@ -20,21 +20,30 @@ const styles = StyleSheet.create({
     },
 });
 
-const LaporanPDF = (data: any, type: string): Promise<Blob> => {
-    let Data;
+const fetchComparison = async ():Promise<Comparison[]> => {
+    const response = await fetch(`/api/data?type=comparison`);
+    const data = await response.json();
+    if (!response.ok) {
+       throw Error('error')
+    }
+    return data
+}
 
+const LaporanPDF = async (data: any, type: string, kriteria?: Kriteria[], score?: ScoreData[]): Promise<Blob> => {
+    let Data;
     switch (type) {
-        case 'siswa':
+        case 'student':
             Data = LaporanSiswa(data);
             break;
         case 'penilaian':
-            Data = LaporanPenilaian(data);
+            Data = LaporanPenilaian({score: score as ScoreData[], kriteria: kriteria as any});
             break;
         case 'hasil-akhir':
-            Data = LaporanHasilAkhir(data);
+            Data = LaporanHasilAkhir({score: score as ScoreData[], kriteria: kriteria as Kriteria[]});
             break;
         case 'kriteria':
-            Data = LaporanKriteria(data);
+            const comparison = await  fetchComparison();
+            Data = LaporanKriteria(data, comparison);
             break;
         default:
             Data = null;
@@ -44,9 +53,9 @@ const LaporanPDF = (data: any, type: string): Promise<Blob> => {
     const renderPdf = () => (
         <Document>
             <Page size="A4" style={styles.page}>
-                <LaporanHeader/>
+                <LaporanHeader />
                 {Data}
-                <LaporanFooter/>
+                <LaporanFooter />
             </Page>
         </Document>
     );
@@ -54,32 +63,68 @@ const LaporanPDF = (data: any, type: string): Promise<Blob> => {
     return pdf(renderPdf()).toBlob();
 };
 
-export const NavBar = ({user}: { user: User }) => {
-
+export const NavBar = ({ user }: { user: User }) => {
+    const { setErrorMessage } = useNotification();
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
     const [isLaporanDropdownOpen, setIsLaporanDropdownOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [option, setOption] = useState<string[]>([]);
+    const [selectedScoreCode, setSelectedScoreCode] = useState<string>('');
+    const [score, setScore] = useState<Score<any>>()
+    const [selectedLaporan, setSelectedLaporan] = useState<string>("")
 
     const toggleDropdown = (setState: React.Dispatch<React.SetStateAction<boolean>>) => {
         setState((prevState) => !prevState);
     };
 
-
-
+    // Handle fetching kriteria data
     const handleLaporan = async (type: string) => {
         try {
-            const response = await fetch(`/api/data?type=${type}`);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch data for ${type}`);
+            if (type === 'penilaian' || type === 'hasil-akhir') {
+                setSelectedLaporan(type)
+                const response = await fetch('/api/score');
+                if (!response.ok) {
+                    setErrorMessage("failed fetch penilaian")
+                    return
+                }
+                const data = await response.json();
+                setScore(data);
+                setOption(Object.keys(data))
+                setIsModalOpen(true);
+
+            } else {
+                const response = await fetch(`/api/data?type=${type}`);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch data for ${type}`);
+                }
+                const data = await response.json();
+                const blob = await LaporanPDF(data, type);
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `${type}-laporan.pdf`;
+                link.click();
+            }
+        } catch (err: any) {
+            setErrorMessage(err.message || "Error");
+        }
+    };
+
+    // Handle modal closing and PDF generation
+    const handleModalClose = async () => {
+        setIsModalOpen(false);
+        if (selectedScoreCode) {
+            const response = await fetch(`/api/data?type=kriteria`)
+            if(!response.ok) {
+                setErrorMessage("failed fetch kriteria")
+                return
             }
 
-            const data = await response.json();
-            const blob = await LaporanPDF(data, type);
+            const kriteria = await response.json();
+            const blob = await LaporanPDF(null, selectedLaporan, kriteria, score![selectedScoreCode] as any);
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `${type}-laporan.pdf`;
+            link.download = `penilaian-laporan-${selectedScoreCode}.pdf`;
             link.click();
-        } catch (err) {
-            console.error('Error generating PDF:', err);
         }
     };
 
@@ -121,9 +166,7 @@ export const NavBar = ({user}: { user: User }) => {
                                         Laporan
                                     </button>
                                     <div
-                                        className={`${
-                                            isLaporanDropdownOpen ? 'block' : 'hidden'
-                                        } dropdown-menu absolute text-gray-700 bg-white shadow-md rounded-lg w-48 mt-2`}
+                                        className={`${isLaporanDropdownOpen ? 'block' : 'hidden'} dropdown-menu absolute text-gray-700 bg-white shadow-md rounded-lg w-48 mt-2`}
                                     >
                                         <Link href="#" onClick={() => handleLaporan('student')}
                                               className="block px-4 py-2 text-sm">
@@ -176,6 +219,41 @@ export const NavBar = ({user}: { user: User }) => {
                     </div>
                 </div>
             </nav>
+
+            {/* Modal to select score code */}
+            {isModalOpen && (
+                <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
+                    <div className="bg-white p-6 rounded-lg">
+                        <h2 className="text-xl font-semibold mb-4">Unduh laporan {}</h2>
+                        <select
+                            value={selectedScoreCode}
+                            onChange={(e) => setSelectedScoreCode(e.target.value)}
+                            className="border border-gray-300 rounded-md p-2"
+                        >
+                            <option value="">--Pilih Code--</option>
+                            {option.map((k) => (
+                                <option key={k} value={k}>
+                                    {k}
+                                </option>
+                            ))}
+                        </select>
+                        <div className="mt-4 flex justify-end space-x-4">
+                            <button
+                                className="px-4 py-2 bg-gray-500 text-white rounded-md"
+                                onClick={() => setIsModalOpen(false)}
+                            >
+                                Batal
+                            </button>
+                            <button
+                                className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                                onClick={handleModalClose}
+                            >
+                                Unduh Laporan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
