@@ -94,7 +94,8 @@ const POST = async (
         if (!body.code || !body.name || !body.class || !body.dob || !body.gender || !body.address) {
             throw Error('id, nama, kelas, tanggal lahir, jenis kelamin, alamat, wajib di isi');
         }
-        return (await connectDB()).query(`INSERT INTO student (code, name, class, dob, gender, address) VALUES (?, ?, ?, ?, ?, ?)`,
+        return (await connectDB()).query(`INSERT INTO student (code, name, class, dob, gender, address)
+                                          VALUES (?, ?, ?, ?, ?, ?)`,
             [body.code, body.name, body.class, body.dob, body.gender, body.address],
         )
     }
@@ -160,6 +161,29 @@ const PUT = async (
             [body.name, body.class, body.dob, body.gender, body.address, body.code]
         );
 
+    }
+    if (body.type === 'score') {
+        const d = await connectDB()
+        const [student] = await d.query("SElECT * FROM student WHERE id = ?", [(body.data as {
+            selectedSiswa: number
+        }).selectedSiswa]) as unknown as Student[][];
+        if (!student) {
+            throw Error('Siswa tidak ditemukan');
+        }
+        const [score] = await d.query("SELECT * FROM score WHERE student_id = ? AND code = ?", [student[0].id, (body.data as {
+            selectedCode: string
+        }).selectedCode]) as unknown as Array<Array<{id: number}>>
+
+        return (await connectDB()).query(
+            `UPDATE score
+             SET student_id   = ?,
+                 data         = ?,
+                 student_name = ?
+             WHERE id = ?`,
+            [student[0].id, JSON.stringify((body.data as {
+                inputAddValues: { [key: string]: string }
+            }).inputAddValues), student[0].name, score[0].id]
+        );
     }
 }
 

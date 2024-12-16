@@ -99,7 +99,7 @@ const PenilaianPage = ({ user }: { user: User }) => {
             inputAddValues,
         };
 
-        const response = await fetch(`/api/data/${selectedStudent.id}`, {
+        const response = await fetch(`/api/data`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
