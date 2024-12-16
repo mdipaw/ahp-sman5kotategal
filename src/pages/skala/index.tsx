@@ -45,9 +45,9 @@ const KriteriaPage = ({user}: { user: User }) => {
                 },
                 body: JSON.stringify({
                     type: 'scale',
-                    id_nilai: selectedSkala.id,
-                    jum_nilai: updatedData[1],
-                    ket_nilai: updatedData[2],
+                    id: selectedSkala.id,
+                    value: updatedData[1],
+                    name: updatedData[2],
                 }),
             });
 
@@ -69,16 +69,16 @@ const KriteriaPage = ({user}: { user: User }) => {
     };
 
     const handleAddSubmit = async (newData: string[]) => {
-        const [nilai, ket] = newData;
+        const [value, name] = newData;
         const response = await fetch("/api/data", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                type: 'nilai',
-                ket_nilai: ket,
-                jum_nilai: nilai,
+                type: 'scale',
+                name: name,
+                value: value,
             }),
         });
         if (!response.ok) {
@@ -96,8 +96,8 @@ const KriteriaPage = ({user}: { user: User }) => {
         if (totalRecords <= rowsPerPage && init) return
         const offset = (page - 1) * limit;
         const [responseData, responseCount] = await Promise.all([
-            fetch(`/api/data?type=nilai&limit=${limit}&offset=${offset}`),
-            fetch(`/api/data?type=count&type_count=nilai`)
+            fetch(`/api/data?type=scale&limit=${limit}&offset=${offset}`),
+            fetch(`/api/data?type=count&type_count=scale`)
         ])
 
         if (responseData.ok) {
@@ -114,7 +114,7 @@ const KriteriaPage = ({user}: { user: User }) => {
 
     const handleDelete = async (selectedRows: number[]) => {
         const values = selectedRows.join(',');
-        const response = await fetch(`/api/data?type=nilai&primary_column=id_nilai&ids=${values}`, {
+        const response = await fetch(`/api/data?type=scale&primary_column=id&ids=${values}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
