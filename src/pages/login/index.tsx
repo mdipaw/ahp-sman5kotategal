@@ -67,7 +67,7 @@ const LoginPage = () => {
                         Login
                     </button>
                 </form>
-                <p className="text-center text-sm text-gray-500 mt-4">SMA 5 N Kota Tegal</p>
+                <p className="text-center text-sm text-gray-500 mt-4">SMAN 5 Kota Tegal</p>
             </div>
         </div>
     );
