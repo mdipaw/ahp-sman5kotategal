@@ -1,9 +1,9 @@
-import mysql, {Connection} from 'mysql2/promise';
+import mysql, {Pool} from 'mysql2/promise';
 
-let connection: Connection | undefined;
-export const connectDB = async (): Promise<mysql.Connection> => {
+let connection: Pool | undefined;
+export const connectDB = async (): Promise<mysql.Pool> => {
     if (!connection) {
-        connection =  await mysql.createConnection({
+        connection =  mysql.createPool({
             host: process.env.DB_HOST || 'localhost',
             user: process.env.DB_USER || 'root',
             password: process.env.DB_PASSWORD || '123',
@@ -14,7 +14,7 @@ export const connectDB = async (): Promise<mysql.Connection> => {
 }
 
 export const countData = async (
-    connection: Connection,
+    connection: Pool,
     type: string,
 
 ): Promise<{ total:number }> => {
@@ -23,7 +23,7 @@ export const countData = async (
 }
 
 export const getData = async<T> (
-    connection: Connection,
+    connection: Pool,
     table: string,
     limit?: number,
     offset?: number,
