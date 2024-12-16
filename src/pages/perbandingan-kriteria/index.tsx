@@ -1,7 +1,7 @@
 import { GetServerSideProps } from "next";
 import { getUser } from "@/lib/auth";
 import { Footer, NavBar } from "@/components";
-import {Comparison, Kriteria, Skala, User} from "@/types/api";
+import {Comparison, Kriteria, Scale, User} from "@/types/api";
 import React, { useState, useEffect } from "react";
 import {formatValue} from "@/lib/conversion";
 import {calculateAhp} from "@/lib/ahp";
@@ -23,7 +23,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 const PerbandinganPage = ({ user }: { user: User }) => {
     const {setErrorMessage, setSuccessMessage, setOnDismiss, dismissTime} = useNotification();
     const [kriteria, setKriteria] = useState<Kriteria[]>([]);
-    const [scale, setScale] = useState<Skala[]>([]);
+    const [scale, setScale] = useState<Scale[]>([]);
     const [comparisons, setComparisons] = useState<Record<string, Record<string, number>>>({});
     const [comparison, setComparison] = useState<Comparison[]>([]);
     const [canSubmit, setCanSubmit] = useState<boolean>(false);
@@ -40,7 +40,7 @@ const PerbandinganPage = ({ user }: { user: User }) => {
 
     useEffect(() => {
         fetchData('kriteria', setKriteria);
-        fetchData('nilai', setScale);
+        fetchData('scale', setScale);
         fetchData('comparison', setComparison);
     }, []);
 
@@ -154,14 +154,14 @@ const PerbandinganPage = ({ user }: { user: User }) => {
                                                 className="w-full"
                                             >
                                                 {scale.map((option) => (
-                                                    <option key={option.id_nilai} value={option.jum_nilai}>
-                                                        {formatValue(option.jum_nilai)} - {option.ket_nilai}
+                                                    <option key={option.id} value={option.value}>
+                                                        {formatValue(option.value)} - {option.name}
                                                     </option>
                                                 ))}
                                             </select>
                                         )}
                                         {kriteria1.id === kriteria2.id && (
-                                            <span>1 - {scale.find(v => v.jum_nilai === 1)?.ket_nilai}</span>
+                                            <span>1 - {scale.find(v => v.value === 1)?.name}</span>
                                         )}
                                     </td>
                                 ))}

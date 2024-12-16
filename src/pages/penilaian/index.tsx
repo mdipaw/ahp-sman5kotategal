@@ -4,6 +4,7 @@ import { GetServerSideProps } from "next";
 import { getUser } from "@/lib/auth";
 import { Kriteria, Score, Student, User } from "@/types/api";
 import { useNotification } from "@/context/NotificationContext";
+import {getScoreDescription} from "@/lib/conversion";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
     const [user, backToLogin] = await getUser(context);
@@ -343,7 +344,7 @@ const PenilaianPage = ({ user }: { user: User }) => {
                                             {kriteria.map((kriteriaItem) => (
                                                 <td key={kriteriaItem.code}
                                                     className="px-4 py-2 border border-gray-300">
-                                                    {data[kriteriaItem.code]}
+                                                    {data[kriteriaItem.code]} = { getScoreDescription(data[kriteriaItem.code])}
                                                 </td>
                                             ))}
                                             <td className="px-4 py-2 border border-gray-300 flex justify-center space-x-2">

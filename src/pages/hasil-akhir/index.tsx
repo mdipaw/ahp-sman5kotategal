@@ -4,6 +4,7 @@ import {formatValue} from "@/lib/conversion";
 import {Footer, NavBar} from "@/components";
 import {GetServerSideProps} from "next";
 import {getUser} from "@/lib/auth";
+import {calculateRanking} from "@/lib/ahp";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
     const [user, backToLogin] = await getUser(context);
@@ -38,38 +39,6 @@ const HasilAkhirPage = ({user}: { user: User }) => {
     useEffect(() => {
         fetchData();
     }, []);
-
-    // Function to calculate ranking based on total score
-    const calculateRanking = (students: [{
-        id: number;
-        code: string;
-        student_id: number;
-        student_name: string;
-        data: { [p: string]: any }
-    }]) => {
-        return students
-            .map((student) => {
-                // Parse the stringified 'data' field which includes 'weight_values'
-                const parsedData = JSON.parse(student.data as unknown as string); // Parse the entire data object
-                const {weight_values} = parsedData; // Extract weight_values from parsed data
-
-                return {
-                    ...student,
-                    totalScore: Object.keys(parsedData).reduce(
-                        (acc, key) => {
-                            // Exclude weight_values from being counted as a score
-                            if (key !== 'weight_values') {
-                                acc += (parsedData[key] * (weight_values[key] || 0));
-                            }
-                            return acc;
-                        },
-                        0
-                    ),
-                    data: parsedData, // Store parsed data
-                };
-            })
-            .sort((a, b) => b.totalScore - a.totalScore); // Sort students by total score
-    };
 
     return (
         <>

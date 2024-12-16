@@ -76,7 +76,6 @@ const SiswaPage = ({user}: { user: User }) => {
 
     const handleAddSubmit = async (newData: string[]) => {
         const [code, name,  klass, dob, gender, address ] = newData;
-        console.log(newData);
         const response = await fetch("/api/data", {
             method: "POST",
             headers: {
@@ -112,7 +111,7 @@ const SiswaPage = ({user}: { user: User }) => {
 
         if (responseData.ok) {
             const data = await responseData.json() as Student[];
-            setStudent(data);
+            setStudent(data.map(student => ({...student, gender: student.gender === 'f' ? 'Perempuan': 'Laki-laki'})));
         }
 
         if (responseCount.ok) {

@@ -3,7 +3,7 @@ import {useRouter} from 'next/router';
 import {NavBar, Footer} from "@/components";
 import {GetServerSideProps} from "next";
 import {getUser} from "@/lib/auth";
-import {Skala, User} from "@/types/api";
+import {Scale, User} from "@/types/api";
 import Table from "@/components/Table";
 import EditForm from "@/components/PopupForm";
 import AddForm from "@/components/PopupForm";
@@ -26,9 +26,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 const KriteriaPage = ({user}: { user: User }) => {
     const {setErrorMessage, setSuccessMessage, setOnDismiss, dismissTime} = useNotification();
     const router = useRouter();
-    const [skalaList, setSkalaList] = useState<TypeTableData<Skala>[]>([]);
+    const [skalaList, setSkalaList] = useState<TypeTableData<Scale>[]>([]);
     const [{}, setSelectedRows] = useState<number[]>([]);
-    const [selectedSkala, setSelectedSkala] = useState<TypeTableData<Skala> | null>(null);
+    const [selectedSkala, setSelectedSkala] = useState<TypeTableData<Scale> | null>(null);
     const [isAddFormOpen, setIsAddFormOpen] = useState(false);
     const [isEditFormOpen, setIsEditFormOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -44,7 +44,7 @@ const KriteriaPage = ({user}: { user: User }) => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    type: 'nilai',
+                    type: 'scale',
                     id_nilai: selectedSkala.id,
                     jum_nilai: updatedData[1],
                     ket_nilai: updatedData[2],
@@ -59,7 +59,7 @@ const KriteriaPage = ({user}: { user: User }) => {
             setSkalaList((prevList) =>
                 prevList.map((skala) =>
                     skala.id === selectedSkala.id
-                        ? {...skala, jum_nilai: Number(updatedData[1]), ket_nilai: updatedData[2]}
+                        ? {...skala, value: Number(updatedData[1]), name: updatedData[2]}
                         : skala
                 )
             );
@@ -101,8 +101,8 @@ const KriteriaPage = ({user}: { user: User }) => {
         ])
 
         if (responseData.ok) {
-            const data = await responseData.json() as Skala[];
-            setSkalaList(data.map((k: Skala) => ({...k, id: k.id_nilai})));
+            const data = await responseData.json() as Scale[];
+            setSkalaList(data.map((k: Scale) => ({...k, id: k.id})));
         }
 
         if (responseCount.ok) {
@@ -151,7 +151,7 @@ const KriteriaPage = ({user}: { user: User }) => {
                     ]}
                     data={skalaList}
                     onRowSelect={(selectedRows) => setSelectedRows(selectedRows)}
-                    onEdit={(kriteria: TypeTableData<Skala>) => (setSelectedSkala(kriteria), setIsEditFormOpen(true))}
+                    onEdit={(kriteria: TypeTableData<Scale>) => (setSelectedSkala(kriteria), setIsEditFormOpen(true))}
                     onDelete={handleDelete}
                     onAdd={() => setIsAddFormOpen(true)}
                     currentPage={currentPage}
@@ -169,9 +169,9 @@ const KriteriaPage = ({user}: { user: User }) => {
                         onClose={() => setIsEditFormOpen(false)}
                         onSubmit={handleEditSubmit}
                         inputs={[
-                            {label: "ID skala", defaultValue: String(selectedSkala.id_nilai), disabled: true},
-                            {label: 'Nilai', defaultValue: String(selectedSkala.jum_nilai)},
-                            {label: 'Keterangan', defaultValue: selectedSkala.ket_nilai},
+                            {label: "ID skala", defaultValue: String(selectedSkala.id), disabled: true},
+                            {label: 'Nilai', defaultValue: String(selectedSkala.value)},
+                            {label: 'Keterangan', defaultValue: selectedSkala.name},
                         ]}
                     />
                 )}
