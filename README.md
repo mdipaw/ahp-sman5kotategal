@@ -23,16 +23,14 @@ Sebelum menjalankan aplikasi, pastikan Anda telah menginstal dan mengonfigurasi 
     - Buka file `src/lib/db.ts` dan periksa bagian pengaturan koneksi database:
 
     ```typescript
-    import mysql from 'mysql2';
-
-    const connection = mysql.createConnection({
-        host: process.env.DB_HOST || 'localhost',
-        user: process.env.DB_USER || 'root',
-        password: process.env.DB_PASSWORD || '123',
-        database: process.env.DB_NAME || 'ahp',
-    });
-
-    export default connection;
+   ....
+         connection =  mysql.createPool({
+            host: process.env.DB_HOST || 'localhost',
+            user: process.env.DB_USER || 'root',
+            password: process.env.DB_PASSWORD || '123',
+            database: process.env.DB_NAME || 'employees',
+        });
+   ....
     ```
 
     - Anda dapat mengatur variabel-variabel environment seperti `DB_HOST`, `DB_USER`, `DB_PASSWORD`, dan `DB_NAME` di file `.env` (lihat contoh di bawah).
