@@ -1,40 +1,116 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# AHP SMAN 5 Kota Tegal
 
-## Getting Started
+Proyek ini adalah aplikasi berbasis **Next.js** yang menerapkan metode **Analytic Hierarchy Process (AHP)**. Aplikasi ini menggunakan database **MariaDB/MySQL** untuk menyimpan data
 
-First, run the development server:
+## Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Sebelum menjalankan aplikasi, pastikan Anda telah menginstal dan mengonfigurasi hal-hal berikut:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. **Node.js** versi 18 atau lebih tinggi
+    - Anda dapat memeriksa versi Node.js dengan menjalankan perintah:
+      ```bash
+      node -v
+      ```
+    - Jika Node.js belum terinstal atau versi Anda lebih rendah dari 18, silakan instal versi terbaru dari [Node.js](https://nodejs.org/).
+2. **MariaDB/MySQL** terinstal di mesin Anda (jika ingin menggunakan database lokal)
+    - Anda dapat mengunduh dan menginstal MariaDB dari [situs resminya](https://mariadb.org/download/) atau MySQL dari [MySQL download page](https://dev.mysql.com/downloads/).
+    - Setelah terinstal, pastikan MariaDB/MySQL Anda berjalan dan dapat diakses melalui `localhost`.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## Konfigurasi Database
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+1. **Ubah koneksi database di `src/lib/db.ts`**
+    - Untuk mengonfigurasi koneksi ke database, Anda dapat menggunakan environment variables. Koneksi akan otomatis menggunakan environment variables yang ada atau fallback ke nilai default jika variabel tersebut tidak ditemukan.
+    - Buka file `src/lib/db.ts` dan periksa bagian pengaturan koneksi database:
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+    ```typescript
+    import mysql from 'mysql2';
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+    const connection = mysql.createConnection({
+        host: process.env.DB_HOST || 'localhost',
+        user: process.env.DB_USER || 'root',
+        password: process.env.DB_PASSWORD || '123',
+        database: process.env.DB_NAME || 'ahp',
+    });
 
-## Learn More
+    export default connection;
+    ```
 
-To learn more about Next.js, take a look at the following resources:
+    - Anda dapat mengatur variabel-variabel environment seperti `DB_HOST`, `DB_USER`, `DB_PASSWORD`, dan `DB_NAME` di file `.env` (lihat contoh di bawah).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+2. **Buat database menggunakan file `database.sql`**
+    - Jika Anda menggunakan database lokal, Anda perlu membuat database terlebih dahulu dengan mengimpor file SQL yang telah disediakan.
+    - File `database.sql` berisi skema dan tabel yang diperlukan untuk aplikasi ini.
+    - Anda dapat mengimpor file SQL ke MariaDB/MySQL menggunakan command line atau tools seperti **phpMyAdmin** atau **MySQL Workbench**.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   Untuk mengimpor file `database.sql` menggunakan command line, jalankan perintah berikut di terminal:
 
-## Deploy on Vercel
+    ```bash
+    mysql -u root -p < path/to/database.sql
+    ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+    - Pastikan Anda mengganti `root` dengan username database Anda (jika berbeda) dan `path/to/database.sql` dengan path lengkap menuju file `database.sql`.
+    - Jika berhasil, database Anda akan dibuat dan siap untuk digunakan.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+## Menjalankan Aplikasi
+
+1. **Install dependensi**
+    - Setelah semua persyaratan dan konfigurasi di atas terpenuhi, jalankan perintah berikut untuk menginstal semua dependensi proyek:
+
+    ```bash
+    npm install
+    ```
+
+2. **Jalankan aplikasi**
+    - Untuk menjalankan aplikasi di mode pengembangan, gunakan perintah berikut:
+
+    ```bash
+    npm run dev
+    ```
+
+3. **Akses aplikasi di browser**
+    - Setelah server berjalan, buka browser dan akses aplikasi di:
+
+    ```
+    http://localhost:3000
+    ```
+
+   Aplikasi akan berjalan di `localhost:3000`, dan Anda dapat mulai menggunakan aplikasi AHP ini.
+
+## Catatan
+
+- Terdapat 2 akun:
+  - guru -> username: guru, password: password
+  - admin -> username: admin, password: password
+- Hasil perhitungan AHP serta laporan menggunakan data dummy, seperti yang ada di bagian **hasil akhir** dan **laporan**.
+- Jika Anda membutuhkan implementasi **AHP dengan perhitungan nyata**, silakan **hubungi**:
+    - **Email**: [mdipawijaya@gmail.com](mailto:mdipawijaya@gmail.com)
+
+## Screenshots
+
+<div style="display: flex; justify-content: space-between; margin-bottom: 10px">
+    <img src=".github/screenshots/1.png" alt="Screenshot 1" width="48%" />
+    <img src=".github/screenshots/2.png" alt="Screenshot 2" width="48%" />
+</div>
+<div style="display: flex; justify-content: space-between; margin-bottom: 10px">
+    <img src=".github/screenshots/3.png" alt="Screenshot 1" width="48%" />
+    <img src=".github/screenshots/4.png" alt="Screenshot 2" width="48%" />
+</div>
+<div style="display: flex; justify-content: space-between; margin-bottom: 10px">
+    <img src=".github/screenshots/5.png" alt="Screenshot 1" width="48%" />
+    <img src=".github/screenshots/6.png" alt="Screenshot 2" width="48%" />
+</div>
+<div style="display: flex; justify-content: space-between; margin-bottom: 10px">
+    <img src=".github/screenshots/7.png" alt="Screenshot 1" width="48%" />
+</div>
+
+### Cetak Laporan
+<div style="display: flex; justify-content: space-between; margin-bottom: 10px">
+    <img src=".github/screenshots/8.png" alt="Screenshot 1" width="48%" />
+    <img src=".github/screenshots/9.png" alt="Screenshot 2" width="48%" />
+</div>
+<div style="display: flex; justify-content: space-between; margin-bottom: 10px">
+    <img src=".github/screenshots/10.png" alt="Screenshot 1" width="48%" />
+    <img src=".github/screenshots/11.png" alt="Screenshot 2" width="48%" />
+</div>
+
+---
