@@ -81,7 +81,7 @@ Sebelum menjalankan aplikasi, pastikan Anda telah menginstal dan mengonfigurasi 
   - admin -> username: admin, password: password
 - Hasil perhitungan AHP serta laporan menggunakan data dummy, seperti yang ada di bagian **hasil akhir** dan **laporan**.
 - Jika Anda membutuhkan implementasi **AHP dengan perhitungan nyata**, silakan **hubungi**:
-    - **Email**: [mdipawijaya@gmail.com](mailto:mdipawijaya@gmail.com)
+    - **Email**: [mdipaw@outlook.com](mailto:mdipaw@outlook.com)
 
 ## Screenshots
 
