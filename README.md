@@ -28,7 +28,7 @@ Sebelum menjalankan aplikasi, pastikan Anda telah menginstal dan mengonfigurasi 
             host: process.env.DB_HOST || 'localhost',
             user: process.env.DB_USER || 'root',
             password: process.env.DB_PASSWORD || '123',
-            database: process.env.DB_NAME || 'employees',
+            database: process.env.DB_NAME || 'ahp',
         });
    ....
     ```
@@ -81,7 +81,7 @@ Sebelum menjalankan aplikasi, pastikan Anda telah menginstal dan mengonfigurasi 
   - admin -> username: admin, password: password
 - Hasil perhitungan AHP serta laporan menggunakan data dummy, seperti yang ada di bagian **hasil akhir** dan **laporan**.
 - Jika Anda membutuhkan implementasi **AHP dengan perhitungan nyata**, silakan **hubungi**:
-    - **Email**: [mdipaw@outlook.com](mailto:mdipaw@outlook.com)
+    - **Email**: [mdipawijaya@outlook.com](mailto:mdipawijaya@outlook.com)
 
 ## Screenshots
 
